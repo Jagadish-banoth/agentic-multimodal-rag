@@ -1,0 +1,55 @@
+# .gitignore for agentic-multimodal-rag
+
+# =============================
+# Secrets / local environment
+# =============================
+.env
+.env.*
+!.env.example
+
+# =============================
+# Python
+# =============================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+
+# Virtual environments
+venv/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Pytest / local tooling caches
+.pytest_cache/
+.deepeval/
+
+# =============================
+# Generated data / indices / outputs
+# =============================
+data/raw/
+data/processed/
+data/index/
+artifacts/
+logs/
+out/
+
+# Logs
+*.log
+
+# =============================
+# Editor / OS junk
+# =============================
+.vscode/
+.DS_Store
+Thumbs.db
+
+# =============================
+# Local temp
+# =============================
+*.tmp
+*.bak

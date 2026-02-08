@@ -1,0 +1,242 @@
+# ============================================================
+# Agentic Multimodal RAG - Production Requirements
+# ============================================================
+# Last updated: 2026-02-07
+# Comprehensive list of ALL packages needed to run the pipeline.
+# Organized by component for easy understanding and deployment.
+# ============================================================
+#
+# QUICK START:
+#   pip install -r requirements.txt
+#
+# FOR GPU SUPPORT (CUDA):
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+#
+# FOR DOCKER:
+#   See Dockerfile for optimized installation order
+#
+# ============================================================
+
+# ==============================================================
+# SECTION 1: CORE PYTHON UTILITIES
+# ==============================================================
+# These are fundamental packages used across the entire codebase
+# --------------------------------------------------------------
+python-dotenv>=1.0.0      # Load .env files (grounded_llm.py, settings)
+PyYAML>=6.0.1             # Config parsing (settings.yaml)
+tqdm>=4.66.0              # Progress bars (ingestion, scripts)
+regex>=2024.0.0           # Advanced regex as 're2' (text_ingest.py)
+numpy>=1.26.0             # Numerical arrays (embeddings, FAISS)
+scipy>=1.11.0             # Scientific computing (audio processing)
+
+# ==============================================================
+# SECTION 2: ML/AI CORE (PyTorch Ecosystem)
+# ==============================================================
+# Foundation for all ML models - embeddings, LLM, NLI, etc.
+# Installation order: torch first, then transformers ecosystem
+# --------------------------------------------------------------
+torch>=2.1.0              # PyTorch - GPU computation backbone
+transformers>=4.36.0      # HuggingFace models:
+                          #   - BLIP-2 (image captioning) 
+                          #   - CLIP (image encoding)
+                          #   - DeBERTa (NLI verification)
+                          #   - AutoTokenizer (chunking)
+sentence-transformers>=2.3.1  # Embedding models:
+                              #   - BAAI/bge-m3 (text embeddings)
+                              #   - Cross-encoder rerankers
+accelerate>=0.25.0        # Optimized model loading (low_cpu_mem_usage)
+huggingface-hub>=0.20.0   # Model downloads and caching
+
+# ==============================================================
+# SECTION 3: LOCAL LLM INFERENCE
+# ==============================================================
+# For running Llama3, Gemma locally via Ollama
+# Also supports OpenRouter API for cloud LLMs
+# --------------------------------------------------------------
+ollama>=0.1.6             # Local LLM inference (agentic_planner.py, grounded_llm.py)
+                          # Models: gemma2:2b (planner), llama3:8b (generation)
+openai>=1.12.0            # OpenRouter API client (grounded_llm.py)
+
+# ==============================================================
+# SECTION 4: VECTOR STORE & RETRIEVAL
+# ==============================================================
+# FAISS for dense retrieval, BM25 for sparse/keyword retrieval
+# --------------------------------------------------------------
+faiss-cpu>=1.7.4          # Vector similarity search (dense_retriever.py)
+                          # Use faiss-gpu for GPU acceleration
+rank-bm25>=0.2.2          # BM25 Okapi sparse retrieval (sparse_retriever.py)
+
+# ==============================================================
+# SECTION 5: DOCUMENT PARSING
+# ==============================================================
+# Multi-format document ingestion support
+# --------------------------------------------------------------
+PyMuPDF==1.22.5           # PDF parsing - fitz (text_ingest.py)
+                          # Pinned version for stability
+python-docx>=1.1.0        # Word documents - docx.Document (text_ingest.py)
+python-pptx>=0.6.23       # PowerPoint files - pptx.Presentation (text_ingest.py)
+openpyxl>=3.1.0           # Excel files (text_ingest.py)
+beautifulsoup4>=4.12.0    # HTML parsing - bs4 (text_ingest.py)
+
+# ==============================================================
+# SECTION 6: OCR (Optical Character Recognition)
+# ==============================================================
+# Multiple OCR backends for multilingual support
+# Install based on your needs - all are optional
+# --------------------------------------------------------------
+pytesseract>=0.3.10       # Tesseract OCR (wrappers/ocr.py)
+                          # Requires: tesseract-ocr system package
+easyocr>=1.7.0            # EasyOCR - 80+ languages (wrappers/ocr.py)
+                          # Best for: Hindi, Telugu, Tamil, etc.
+paddlepaddle>=2.6.0       # PaddlePaddle framework (required for PaddleOCR)
+paddleocr>=2.7.0          # PaddleOCR - best for Chinese text
+
+# ==============================================================
+# SECTION 7: IMAGE PROCESSING
+# ==============================================================
+# Image manipulation and encoding
+# --------------------------------------------------------------
+Pillow>=10.1.0            # Image manipulation (ingestion, wrappers)
+                          # PIL.Image throughout codebase
+
+# ==============================================================
+# SECTION 8: VIDEO PROCESSING
+# ==============================================================
+# Video frame extraction and processing
+# --------------------------------------------------------------
+opencv-python>=4.9.0      # Video frame extraction (video_ingest.py)
+                          # Imported as cv2
+
+# ==============================================================
+# SECTION 9: AUDIO PROCESSING
+# ==============================================================
+# Audio transcription using OpenAI Whisper
+# --------------------------------------------------------------
+openai-whisper>=20231117  # Whisper ASR (audio_ingest.py)
+                          # Supports 100+ languages
+pydub>=0.25.1             # Audio format conversion (audio_ingest.py)
+                          # Requires: ffmpeg system package
+librosa>=0.10.0           # Audio feature extraction
+soundfile>=0.12.0         # Audio I/O
+ffmpeg-python>=0.2.0      # FFmpeg Python bindings (audio/video processing)
+
+# ==============================================================
+# SECTION 10: EVALUATION & METRICS
+# ==============================================================
+# RAG evaluation framework and NLP metrics
+# --------------------------------------------------------------
+ragas>=0.1.9              # RAG evaluation framework (evaluation/ragas.py)
+                          # Metrics: faithfulness, answer_relevancy, etc.
+datasets>=2.14.0          # HuggingFace datasets (ragas.py)
+bert-score>=0.3.13        # BERTScore metric (ragas.py)
+rouge-score>=0.1.2        # ROUGE metrics (ragas.py)
+sacrebleu>=2.3.0          # BLEU metrics
+nltk>=3.8.0               # Tokenization, sentence BLEU (ragas.py)
+
+# ==============================================================
+# SECTION 11: LANGCHAIN INTEGRATION
+# ==============================================================
+# Required for RAGAS framework compatibility
+# --------------------------------------------------------------
+langchain>=0.1.0          # LangChain core
+langchain-community>=0.0.20  # LangChain community integrations
+langchain-openai>=0.0.5   # LangChain OpenAI wrapper (for RAGAS)
+
+# ==============================================================
+# SECTION 12: WEB UI
+# ==============================================================
+# Streamlit-based user interface
+# --------------------------------------------------------------
+streamlit>=1.30.0         # Web interface (ui/app.py)
+
+# ==============================================================
+# SECTION 13: CACHING (Production)
+# ==============================================================
+# Redis-backed embedding cache for performance
+# Optional - system works without Redis
+# --------------------------------------------------------------
+redis>=5.0.0              # Redis client (utils/embedding_cache.py)
+hiredis>=2.3.0            # Fast Redis parser (C bindings)
+
+# ==============================================================
+# SECTION 14: HTTP CLIENTS
+# ==============================================================
+# For external API calls
+# --------------------------------------------------------------
+requests>=2.31.0          # Synchronous HTTP (various)
+httpx>=0.25.0             # Async HTTP client
+aiohttp>=3.9.0            # Async HTTP (for async operations)
+
+# ==============================================================
+# SECTION 15: TESTING & DEVELOPMENT
+# ==============================================================
+# Testing framework and utilities
+# --------------------------------------------------------------
+pytest>=7.4.0             # Testing framework (tests/)
+pytest-asyncio>=0.21.0    # Async test support
+pytest-cov>=4.1.0         # Coverage reporting
+
+# ==============================================================
+# SECTION 16: LOAD TESTING (Optional)
+# ==============================================================
+# Performance testing tools
+# Uncomment if running load tests
+# --------------------------------------------------------------
+locust>=2.20.0            # Load testing (loadtest/locustfile.py)
+
+# ==============================================================
+# SECTION 17: OPTIONAL EMBEDDING PROVIDERS
+# ==============================================================
+# Alternative embedding APIs (sota_embedder.py supports these)
+# Uncomment based on your needs
+# --------------------------------------------------------------
+# cohere>=4.0.0           # Cohere embed-v3 API
+# voyageai>=0.2.0         # Voyage AI embeddings
+
+# ==============================================================
+# SYSTEM DEPENDENCIES (Install separately)
+# ==============================================================
+# These are NOT Python packages - install via system package manager
+#
+# REQUIRED:
+#   - ffmpeg: Audio/video processing
+#     Ubuntu: sudo apt install ffmpeg
+#     macOS: brew install ffmpeg
+#     Windows: choco install ffmpeg
+#
+# FOR OCR:
+#   - tesseract-ocr: Required for pytesseract
+#     Ubuntu: sudo apt install tesseract-ocr tesseract-ocr-eng
+#     macOS: brew install tesseract
+#     Windows: choco install tesseract
+#
+# FOR GPU (CUDA):
+#   - NVIDIA CUDA Toolkit 11.8 or 12.x
+#   - cuDNN
+#
+# FOR REDIS CACHING:
+#   - Redis server
+#     Ubuntu: sudo apt install redis-server
+#     macOS: brew install redis
+#     Docker: docker run -d -p 6379:6379 redis
+#
+# ==============================================================
+
+# ==============================================================
+# POST-INSTALLATION STEPS
+# ==============================================================
+# After pip install, run these commands:
+#
+# 1. Download NLTK data:
+#    python -c "import nltk; nltk.download('punkt')"
+#
+# 2. Pull Ollama models:
+#    ollama pull gemma2:2b
+#    ollama pull llama3:8b
+#
+# 3. Verify installation:
+#    python -c "import torch; print(f'PyTorch: {torch.__version__}')"
+#    python -c "import faiss; print(f'FAISS: OK')"
+#    python -c "import transformers; print(f'Transformers: {transformers.__version__}')"
+#
+# ==============================================================

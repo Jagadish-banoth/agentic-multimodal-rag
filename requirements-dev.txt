@@ -1,0 +1,63 @@
+# ============================================================
+# Agentic Multimodal RAG - Development Requirements
+# ============================================================
+# Additional packages for development, testing, and evaluation
+# Install with: pip install -r requirements-dev.txt
+# (Assumes requirements.txt is already installed)
+# ============================================================
+
+# Include all production dependencies
+-r requirements.txt
+
+# ==============================================================
+# DEVELOPMENT TOOLS
+# ==============================================================
+black>=23.0.0             # Code formatter
+isort>=5.12.0             # Import sorter
+flake8>=6.0.0             # Linter
+mypy>=1.0.0               # Type checking
+pre-commit>=3.0.0         # Git hooks
+
+# ==============================================================
+# TESTING
+# ==============================================================
+pytest>=7.4.0             # Testing framework
+pytest-asyncio>=0.21.0    # Async test support
+pytest-cov>=4.1.0         # Coverage reporting
+pytest-xdist>=3.5.0       # Parallel tests
+pytest-timeout>=2.2.0     # Test timeouts
+hypothesis>=6.0.0         # Property-based testing
+
+# ==============================================================
+# DEBUGGING & PROFILING
+# ==============================================================
+ipython>=8.0.0            # Enhanced Python shell
+ipdb>=0.13.0              # IPython debugger
+memory-profiler>=0.61.0   # Memory profiling
+line-profiler>=4.0.0      # Line-by-line profiling
+py-spy>=0.3.0             # Sampling profiler
+
+# ==============================================================
+# DOCUMENTATION
+# ==============================================================
+mkdocs>=1.5.0             # Documentation generator
+mkdocs-material>=9.0.0    # Material theme
+mkdocstrings>=0.24.0      # Auto-generate docs from docstrings
+
+# ==============================================================
+# NOTEBOOKS
+# ==============================================================
+jupyter>=1.0.0            # Jupyter notebooks
+ipywidgets>=8.0.0         # Interactive widgets
+notebook>=7.0.0           # Notebook server
+
+# ==============================================================
+# LOAD TESTING
+# ==============================================================
+locust>=2.20.0            # Load testing
+
+# ==============================================================
+# OPTIONAL API PROVIDERS (for evaluation)
+# ==============================================================
+# cohere>=4.0.0           # Cohere API
+# voyageai>=0.2.0         # Voyage AI API

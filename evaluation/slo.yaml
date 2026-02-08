@@ -1,0 +1,18 @@
+# Service-level objectives for evaluation gates
+# Adjust these to match your hardware and product requirements.
+
+retrieval:
+  # minimum acceptable quality
+  min_recall_hit_at_5: 0.80
+  min_mrr: 0.50
+  min_ndcg_at_10: 0.60
+
+latency:
+  # pipeline p95 wall-clock latency (ms)
+  # NOTE: local generation latency depends heavily on hardware/model.
+  max_pipeline_p95_ms: 8000
+  max_retrieval_p95_ms: 500
+
+load:
+  # minimum throughput in QPS under load test
+  min_qps: 0.1

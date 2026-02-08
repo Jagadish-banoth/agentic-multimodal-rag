@@ -1,0 +1,50 @@
+name: RAGAS Evaluation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-evaluate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-core.txt
+          pip install -r requirements-dev.txt
+
+      - name: Syntax check
+        run: |
+          python -m compileall .
+
+      - name: Run RAGAS pipeline (mock)
+        run: |
+          python scripts/run_ragas_pipeline.py --input evaluation/ragas_dev.jsonl --output artifacts/predictions.jsonl --mock --num-queries 5 --no-ragas
+
+      - name: Convert predictions to CSV
+        run: |
+          python scripts/eval_to_csv.py --input artifacts/predictions.jsonl --output artifacts/predictions.csv
+
+      - name: Upload predictions
+        uses: actions/upload-artifact@v4
+        with:
+          name: predictions
+          path: artifacts/predictions.jsonl
+
+      - name: Upload predictions CSV
+        uses: actions/upload-artifact@v4
+        with:
+          name: predictions_csv
+          path: artifacts/predictions.csv

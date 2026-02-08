@@ -1,0 +1,194 @@
+
+agent:
+  confidence_threshold: 0.7
+  max_attempts: 2
+  phase1_enabled: true             # PHASE 1: Parallel + Expansion + Caching
+
+models:
+  # ===== TEXT EMBEDDING (SOTA for text-to-text retrieval) =====
+  embedding_model: "BAAI/bge-m3"                # 1024-dim, SOTA text retrieval
+  tokenizer_model: "BAAI/bge-m3"
+  
+  # ===== IMAGE EMBEDDING (SOTA for multimodal) =====
+  image_embedding_model: "openai/clip-vit-large-patch14"  # 768-dim, SOTA multimodal
+  
+  # ===== AGENTIC PLANNER (Local Ollama only) =====
+#===============================================================================
+planner:
+  # ===== MODE SELECTION =====
+  # Options: "agentic" (Gemma 2B + fallback), "fast" (rule-based only)
+  mode: agentic              # ✅ Use Gemma 2B for intelligent planning
+  allow_local_llm: true      # ✅ Enable LLM planning at inference
+  
+  # ===== MODEL CONFIGURATION =====
+  local_model: "gemma2:2b"   # Primary: Fast 2B model for planning
+  fallback_model: "gemma3:4b" # Fallback: Larger model if 2B unavailable
+  
+  # ===== GPU ACCELERATION =====
+  use_gpu: true              # ✅ Use GPU for faster inference
+  
+  # ===== SAFETY LIMITS =====
+  llm_timeout: 5             # seconds (will fallback to rule-based if exceeded)
+  llm_max_tokens: 64         # hard cap for planner calls
+  min_complexity_for_llm: "medium"  # Only use LLM for medium+ complexity queries
+  
+  # ===== CACHE =====
+  cache_ttl_seconds: 3600    # reuse plans for repeated queries
+#===============================================================================
+    
+  # ===== LLM GENERATION (Local Ollama primary) =====
+  generator:
+    api_model: null             # Not used
+    local_model: "llama3:8b"    # Production generation model
+  
+  # Legacy settings (deprecated)
+  generator_model: "llama3:8b"   # Ollama fallback
+  trust_remote_code: true
+  use_extractive: false
+
+ingestion:
+  raw_dir: "data/raw/text"
+  out_dir: "data/processed"
+  chunk_tokens: 256
+  overlap_tokens: 64
+  sentence_trimming: true
+  remove_headers_footers: true
+ 
+
+logging:
+  level: "INFO"
+  logfile: "logs/text_ingest.log"
+
+monitoring:
+  enabled: true
+  jsonl_path: "logs/telemetry.jsonl"
+
+# ===== DUAL INDEX CONFIGURATION =====
+indexing:
+  strategy: "dual"              # dual | unified | text_only
+  index_dir: "data/index"
+  
+  text_index:
+    model: "BAAI/bge-m3"
+    dim: 1024
+    type: "hnsw"
+    file: "faiss_text.index"
+  
+  image_index:
+    model: "openai/clip-vit-large-patch14"
+    dim: 768
+    type: "hnsw"
+    file: "faiss_image.index"
+
+faiss:
+  index_type: "auto"
+  hnsw:
+    M: 32
+    ef_construction: 200
+    ef_search: 100
+  ivf:
+    n_list: "auto"
+    nprobe: "auto"
+
+retrieval:
+  # SOTA: Higher retrieval depth for better recall (reranker will filter)
+  dense_k: 100          # Previously 20 - now retrieve more candidates
+  sparse_k: 100         # Previously 20 - BM25 catches keyword matches
+  rerank_k: 50          # Previously 12 - more candidates for final selection
+  
+  # ===== DUAL RETRIEVAL STRATEGY =====
+  fusion_strategy: "weighted"     # weighted | round_robin | adaptive
+  text_weight: 0.6                # Weight for text index results
+  image_weight: 0.4               # Weight for image index results
+
+reranker:
+  model: "BAAI/bge-reranker-base"       # Fast primary (was slow jina-reranker-v3)
+  fallback_model: "BAAI/bge-reranker-base"   # Same as primary for consistency
+  timeout_seconds: 30                         # Increased timeout (was 10s)
+  batch_size: 32
+  top_n: 5
+  use_gpu: true                               # Use GPU for faster reranking
+
+
+scoring:
+  dense_weight: 0.6
+  sparse_weight: 0.4
+
+fusion:
+  max_chunks: 12
+  max_tokens: 1200
+  tokenizer_name: "BAAI/bge-m3"
+  use_tokenizer: true
+  page_group_span: 1
+
+generation:
+  max_generation_tokens: 1024
+  temperature: 0.3
+  top_p: 0.9
+  stop_sequences: []
+  # Generation provider selection:
+  # - auto: use OpenRouter if OPENROUTER_API_KEY (or OP_TOKEN) is set, else use Ollama
+  # - openrouter: prefer OpenRouter, fallback to Ollama
+  # - ollama: Ollama only
+  provider: "auto"
+  fallback_provider: "ollama"
+
+  openrouter:
+    base_url: "https://openrouter.ai/api/v1"
+    model: "nvidia/nemotron-3-nano-30b-a3b:free"
+    reasoning: true
+    timeout: 120
+    auto_continue: true
+    max_continuations: 1
+
+  # Legacy toggle (kept for backwards compatibility)
+  use_ollama_api: true
+  ollama:
+    host: "http://localhost:11434"
+    timeout: 120
+
+verification:
+  enabled: true
+  faithfulness_model: "microsoft/deberta-v3-base"
+  faithfulness_threshold: 0.65
+  batch_size: 8
+  max_pairs: 8
+  device: "cpu"  # Use CPU to free GPU for Ollama/reranker
+
+cache:
+  enabled: true                    # PHASE 1: Enable result caching
+  redis_host: null                 # Use memory cache (set to "localhost" for Redis)
+  redis_port: 6379
+  redis_db: 0
+  redis_password: null
+  query_ttl: 3600                  # 1 hour default
+  doc_ttl: 604800                  # 7 days
+  max_cache_mb: 512                # In-memory cache size
+  fuzzy_threshold: 0.95            # Fuzzy matching threshold
+  enable_fuzzy: true               # PHASE 1: Fuzzy query matching
+  max_failures: 5
+
+image_processing:
+  image_encoder: "openai/clip-vit-large-patch14"
+  image_encoder_dim: 768
+  image_encoder_batch_size: 32
+  image_captioning_model: "Salesforce/blip2-flan-t5-xl"
+  captioning_max_length: 256
+  captioning_batch_size: 8
+  ocr_enabled: true
+  ocr_engine: "tesseract"
+  ocr_language: "eng"
+  ocr_confidence_threshold: 0.3
+  image_resize_max: 1024
+  image_quality: 95
+  extract_handwriting: true
+  combine_caption_and_ocr: true
+  caption_weight: 0.6
+  ocr_weight: 0.4
+  
+  # Memory management (FAANG-level)
+  force_cpu: false
+  sequential_models: true  # Load models one at a time (reduces peak VRAM 9GB → 5GB)
+  clear_cache: true  # Clear GPU cache between operations
+  use_fp16: false  # Mixed precision (halves memory, requires GPU with FP16 support)
+  oom_retry_cpu: true  # Automatic CPU fallback on OOM

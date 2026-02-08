@@ -1,0 +1,84 @@
+# ============================================================
+# Agentic Multimodal RAG - Docker Build Requirements
+# ============================================================
+# Optimized for Docker layer caching - ordered by change frequency
+# Least frequently changed packages first (better cache hits)
+#
+# Usage in Dockerfile:
+#   COPY requirements-docker.txt /app/
+#   RUN pip install --no-cache-dir -r requirements-docker.txt
+# ============================================================
+
+# ==============================================================
+# LAYER 1: Core ML (changes rarely) - INSTALL FIRST
+# ==============================================================
+torch>=2.1.0
+faiss-cpu>=1.7.4
+transformers>=4.36.0
+sentence-transformers>=2.3.1
+accelerate>=0.25.0
+
+# ==============================================================
+# LAYER 2: Document Processing (changes rarely)
+# ==============================================================
+PyMuPDF==1.22.5
+python-docx>=1.1.0
+python-pptx>=0.6.23
+openpyxl>=3.1.0
+beautifulsoup4>=4.12.0
+Pillow>=10.1.0
+opencv-python-headless>=4.9.0  # Headless for Docker (no GUI)
+
+# ==============================================================
+# LAYER 3: Audio/Video Processing
+# ==============================================================
+openai-whisper>=20231117
+pydub>=0.25.1
+librosa>=0.10.0
+soundfile>=0.12.0
+ffmpeg-python>=0.2.0
+
+# ==============================================================
+# LAYER 4: OCR (optional - comment out if not needed)
+# ==============================================================
+pytesseract>=0.3.10
+easyocr>=1.7.0
+# paddlepaddle>=2.6.0     # Uncomment for PaddleOCR
+# paddleocr>=2.7.0        # Uncomment for PaddleOCR
+
+# ==============================================================
+# LAYER 5: LLM & API (may change more often)
+# ==============================================================
+ollama>=0.1.6
+openai>=1.12.0
+langchain>=0.1.0
+langchain-community>=0.0.20
+langchain-openai>=0.0.5
+
+# ==============================================================
+# LAYER 6: Evaluation & Metrics
+# ==============================================================
+ragas>=0.1.9
+datasets>=2.14.0
+bert-score>=0.3.13
+rouge-score>=0.1.2
+sacrebleu>=2.3.0
+nltk>=3.8.0
+
+# ==============================================================
+# LAYER 7: Utilities (changes most often)
+# ==============================================================
+python-dotenv>=1.0.0
+PyYAML>=6.0.1
+tqdm>=4.66.0
+regex>=2024.0.0
+numpy>=1.26.0
+scipy>=1.11.0
+rank-bm25>=0.2.2
+huggingface-hub>=0.20.0
+requests>=2.31.0
+httpx>=0.25.0
+aiohttp>=3.9.0
+redis>=5.0.0
+hiredis>=2.3.0
+streamlit>=1.30.0
